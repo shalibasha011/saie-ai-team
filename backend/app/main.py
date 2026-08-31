@@ -10,6 +10,7 @@ from .decision_intelligence import decision_intelligence
 from .feedback_engine import feedback_engine
 from .recommendation_optimizer import recommendation_optimizer
 from .outcome_tracking import outcome_tracker
+from .evaluation import ai_evaluation
 
 
 app = FastAPI(
@@ -123,65 +124,4 @@ def create_strategy(request: StrategyRequest):
     return autonomous_planner.create_execution_strategy(goal=request.goal)
 
 
-@app.post("/decisions")
-def analyze_decision(request: DecisionRequest):
-    return decision_intelligence.analyze(
-        goal=request.goal,
-        options=request.options
-    )
-
-
-@app.post("/feedback")
-def record_feedback(request: FeedbackRequest):
-    return feedback_engine.record_feedback(
-        agent_id=request.agent_id,
-        task=request.task,
-        score=request.score,
-        feedback=request.feedback
-    )
-
-
-@app.get("/feedback")
-def get_feedback():
-    return {
-        "total_feedback": len(feedback_engine.get_feedback()),
-        "feedback": feedback_engine.get_feedback()
-    }
-
-
-@app.get("/feedback/{agent_id}/average")
-def get_agent_average(agent_id: str):
-    return feedback_engine.get_agent_average_score(agent_id)
-
-
-@app.post("/recommendations/optimize")
-def optimize_recommendations(request: RecommendationRequest):
-    return recommendation_optimizer.optimize(
-        goal=request.goal,
-        recommendations=request.recommendations,
-        feedback_scores=request.feedback_scores
-    )
-
-
-@app.post("/outcomes")
-def record_outcome(request: OutcomeRequest):
-    return outcome_tracker.record_outcome(
-        goal=request.goal,
-        task=request.task,
-        agent_id=request.agent_id,
-        success=request.success,
-        score=request.score
-    )
-
-
-@app.get("/outcomes")
-def get_outcomes():
-    return {
-        "total_outcomes": len(outcome_tracker.get_outcomes()),
-        "outcomes": outcome_tracker.get_outcomes()
-    }
-
-
-@app.get("/outcomes/summary")
-def get_outcome_summary():
-    return outcome_tracker.get_summary()
+@app.post("/
