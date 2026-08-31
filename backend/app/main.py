@@ -4,11 +4,26 @@ from .agents import AGENTS
 from .orchestrator import orchestrator
 from .planning import planning_engine
 
+from .task_decomposition import task_decomposition_engine
+
 
 app = FastAPI(
     title="SAIE AI Team",
     version="0.1.0"
 )
+
+
+class TaskRequest(BaseModel):
+    task: str
+    agent_id: str
+
+
+class PlanRequest(BaseModel):
+    goal: str
+
+
+class DecomposeRequest(BaseModel):
+    goal: str
 
 
 @app.get("/")
@@ -29,22 +44,44 @@ def health():
 @app.get("/agents")
 def get_agents():
     return {
+        "total_agents": len(AGENTS),
         "agents": AGENTS
     }
 
 
-@app.get("/plan")
-def get_plan():
+@app.post("/tasks")
+def assign_task(request: TaskRequest):
+    result = orchestrator.assign_task(
+        task=request.task,
+        agent_id=request.agent_id
+    )
+
+    if not result["success"]:
+        raise HTTPException(
+            status_code=404,
+            detail=result["error"]
+        )
+
+    return result
+
+
+@app.get("/messages")
+def get_messages():
     return {
-        "planning_engine": str(planning_engine)
+        "total_messages": len(orchestrator.get_messages()),
+        "messages": orchestrator.get_messages()
     }
 
 
-@app.get("/team")
-def get_team():
-    return {
-        "message": "SAIE AI Team is ready",
-        "agents": AGENTS,
-        "orchestrator": str(orchestrator),
-        "planning_engine": str(planning_engine)
-    }
+@app.post("/plans")
+def create_plan(request: PlanRequest):
+    return planning_engine.create_plan(
+        goal=request.goal
+    )
+
+
+@app.post("/decompose")
+def decompose_goal(request: DecomposeRequest):
+    return task_decomposition_engine.decompose(
+        goal=request.goal
+    )
