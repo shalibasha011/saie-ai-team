@@ -1,11 +1,12 @@
-nfrom fastapi import FastAPI
+from fastapi import FastAPI, HTTPException
+from pydantic import BaseModel
 
 from .agents import AGENTS
 from .orchestrator import orchestrator
 from .planning import planning_engine
-
 from .task_decomposition import task_decomposition_engine
 from .autonomous_planner import autonomous_planner
+from .decision_intelligence import decision_intelligence
 
 
 app = FastAPI(
@@ -29,6 +30,11 @@ class DecomposeRequest(BaseModel):
 
 class StrategyRequest(BaseModel):
     goal: str
+
+
+class DecisionRequest(BaseModel):
+    goal: str
+    options: list[str]
 
 
 @app.get("/")
@@ -96,4 +102,12 @@ def decompose_goal(request: DecomposeRequest):
 def create_strategy(request: StrategyRequest):
     return autonomous_planner.create_execution_strategy(
         goal=request.goal
+    )
+
+
+@app.post("/decisions")
+def analyze_decision(request: DecisionRequest):
+    return decision_intelligence.analyze(
+        goal=request.goal,
+        options=request.options
     )
