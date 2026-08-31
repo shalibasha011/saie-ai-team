@@ -12,6 +12,7 @@ from .recommendation_optimizer import recommendation_optimizer
 from .outcome_tracking import outcome_tracker
 from .evaluation import ai_evaluation
 from .progress_tracking import progress_tracker
+from .scenario_manager import scenario_manager
 
 
 app = FastAPI(
@@ -72,6 +73,12 @@ class ProgressRequest(BaseModel):
 
 class ProgressUpdateRequest(BaseModel):
     status: str
+
+
+class ScenarioRequest(BaseModel):
+    name: str
+    goal: str
+    assumptions: list[str]
 
 
 @app.get("/")
@@ -237,6 +244,36 @@ def get_progress():
     }
 
 
+@app.post("/scenarios")
+def create_scenario(request: ScenarioRequest):
+    return scenario_manager.create_scenario(
+        name=request.name,
+        goal=request.goal,
+        assumptions=request.assumptions
+    )
+
+
+@app.get("/scenarios")
+def get_scenarios():
+    return {
+        "total_scenarios": len(scenario_manager.get_scenarios()),
+        "scenarios": scenario_manager.get_scenarios()
+    }
+
+
+@app.get("/scenarios/{scenario_id}")
+def get_scenario(scenario_id: int):
+    scenario = scenario_manager.get_scenario(scenario_id)
+
+    if scenario is None:
+        raise HTTPException(
+            status_code=404,
+            detail="Scenario not found"
+        )
+
+    return scenario
+
+
 @app.get("/system/status")
 def system_status():
     return {
@@ -244,6 +281,7 @@ def system_status():
         "status": "operational",
         "total_agents": len(AGENTS),
         "total_messages": len(orchestrator.get_messages()),
+        "total_scenarios": len(scenario_manager.get_scenarios()),
         "progress": progress_tracker.get_summary(),
         "outcomes": outcome_tracker.get_summary()
     }
