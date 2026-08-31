@@ -5,6 +5,7 @@ from .orchestrator import orchestrator
 from .planning import planning_engine
 
 from .task_decomposition import task_decomposition_engine
+from .autonomous_planner import autonomous_planner
 
 
 app = FastAPI(
@@ -23,6 +24,10 @@ class PlanRequest(BaseModel):
 
 
 class DecomposeRequest(BaseModel):
+    goal: str
+
+
+class StrategyRequest(BaseModel):
     goal: str
 
 
@@ -83,5 +88,12 @@ def create_plan(request: PlanRequest):
 @app.post("/decompose")
 def decompose_goal(request: DecomposeRequest):
     return task_decomposition_engine.decompose(
+        goal=request.goal
+    )
+
+
+@app.post("/strategy")
+def create_strategy(request: StrategyRequest):
+    return autonomous_planner.create_execution_strategy(
         goal=request.goal
     )
