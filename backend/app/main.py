@@ -8,6 +8,7 @@ from .task_decomposition import task_decomposition_engine
 from .autonomous_planner import autonomous_planner
 from .decision_intelligence import decision_intelligence
 from .feedback_engine import feedback_engine
+from .recommendation_optimizer import recommendation_optimizer
 
 
 app = FastAPI(
@@ -43,6 +44,12 @@ class FeedbackRequest(BaseModel):
     task: str
     score: float
     feedback: str
+
+
+class RecommendationRequest(BaseModel):
+    goal: str
+    recommendations: list[str]
+    feedback_scores: list[float]
 
 
 @app.get("/")
@@ -136,3 +143,12 @@ def get_feedback():
 @app.get("/feedback/{agent_id}/average")
 def get_agent_average(agent_id: str):
     return feedback_engine.get_agent_average_score(agent_id)
+
+
+@app.post("/recommendations/optimize")
+def optimize_recommendations(request: RecommendationRequest):
+    return recommendation_optimizer.optimize(
+        goal=request.goal,
+        recommendations=request.recommendations,
+        feedback_scores=request.feedback_scores
+    )
