@@ -7,6 +7,7 @@ from .planning import planning_engine
 from .task_decomposition import task_decomposition_engine
 from .autonomous_planner import autonomous_planner
 from .decision_intelligence import decision_intelligence
+from .feedback_engine import feedback_engine
 
 
 app = FastAPI(
@@ -35,6 +36,13 @@ class StrategyRequest(BaseModel):
 class DecisionRequest(BaseModel):
     goal: str
     options: list[str]
+
+
+class FeedbackRequest(BaseModel):
+    agent_id: str
+    task: str
+    score: float
+    feedback: str
 
 
 @app.get("/")
@@ -86,23 +94,17 @@ def get_messages():
 
 @app.post("/plans")
 def create_plan(request: PlanRequest):
-    return planning_engine.create_plan(
-        goal=request.goal
-    )
+    return planning_engine.create_plan(goal=request.goal)
 
 
 @app.post("/decompose")
 def decompose_goal(request: DecomposeRequest):
-    return task_decomposition_engine.decompose(
-        goal=request.goal
-    )
+    return task_decomposition_engine.decompose(goal=request.goal)
 
 
 @app.post("/strategy")
 def create_strategy(request: StrategyRequest):
-    return autonomous_planner.create_execution_strategy(
-        goal=request.goal
-    )
+    return autonomous_planner.create_execution_strategy(goal=request.goal)
 
 
 @app.post("/decisions")
@@ -111,3 +113,26 @@ def analyze_decision(request: DecisionRequest):
         goal=request.goal,
         options=request.options
     )
+
+
+@app.post("/feedback")
+def record_feedback(request: FeedbackRequest):
+    return feedback_engine.record_feedback(
+        agent_id=request.agent_id,
+        task=request.task,
+        score=request.score,
+        feedback=request.feedback
+    )
+
+
+@app.get("/feedback")
+def get_feedback():
+    return {
+        "total_feedback": len(feedback_engine.get_feedback()),
+        "feedback": feedback_engine.get_feedback()
+    }
+
+
+@app.get("/feedback/{agent_id}/average")
+def get_agent_average(agent_id: str):
+    return feedback_engine.get_agent_average_score(agent_id)
