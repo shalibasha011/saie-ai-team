@@ -9,6 +9,7 @@ from .autonomous_planner import autonomous_planner
 from .decision_intelligence import decision_intelligence
 from .feedback_engine import feedback_engine
 from .recommendation_optimizer import recommendation_optimizer
+from .outcome_tracking import outcome_tracker
 
 
 app = FastAPI(
@@ -50,6 +51,14 @@ class RecommendationRequest(BaseModel):
     goal: str
     recommendations: list[str]
     feedback_scores: list[float]
+
+
+class OutcomeRequest(BaseModel):
+    goal: str
+    task: str
+    agent_id: str
+    success: bool
+    score: float
 
 
 @app.get("/")
@@ -152,3 +161,27 @@ def optimize_recommendations(request: RecommendationRequest):
         recommendations=request.recommendations,
         feedback_scores=request.feedback_scores
     )
+
+
+@app.post("/outcomes")
+def record_outcome(request: OutcomeRequest):
+    return outcome_tracker.record_outcome(
+        goal=request.goal,
+        task=request.task,
+        agent_id=request.agent_id,
+        success=request.success,
+        score=request.score
+    )
+
+
+@app.get("/outcomes")
+def get_outcomes():
+    return {
+        "total_outcomes": len(outcome_tracker.get_outcomes()),
+        "outcomes": outcome_tracker.get_outcomes()
+    }
+
+
+@app.get("/outcomes/summary")
+def get_outcome_summary():
+    return outcome_tracker.get_summary()
