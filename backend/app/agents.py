@@ -42,3 +42,25 @@ AGENTS = [
         "status": "ready"
     }
 ]
+AGENTS = [
+    {
+        "id": "planner",
+        "name": "Planning Agent",
+        "role": "Creates plans and breaks tasks into steps"
+    },
+    {
+        "id": "researcher",
+        "name": "Research Agent",
+        "role": "Collects and organizes information"
+    },
+    {
+        "id": "developer",
+        "name": "Developer Agent",
+        "role": "Handles coding and technical tasks"
+    },
+    {
+        "id": "reviewer",
+        "name": "Review Agent",
+        "role": "Reviews results and checks quality"
+    }
+]
