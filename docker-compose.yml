@@ -1,0 +1,27 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    container_name: saie-backend
+    ports:
+      - "8000:8000"
+    depends_on:
+      - postgres
+    environment:
+      DATABASE_URL: postgresql://saie:saie_password@postgres:5432/saie
+
+  postgres:
+    image: postgres:16
+    container_name: saie-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: saie
+      POSTGRES_PASSWORD: saie_password
+      POSTGRES_DB: saie
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+volumes:
+  postgres_data:
